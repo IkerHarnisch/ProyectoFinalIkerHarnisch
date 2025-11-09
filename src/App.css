@@ -520,7 +520,6 @@ button:disabled {
   gap: var(--spacing-lg);
   flex-wrap: wrap;
 }
-}
 
 .header-nav {
   display: flex;
@@ -677,7 +676,6 @@ button:disabled {
   align-items: center;
   gap: var(--spacing-lg);
   flex-wrap: wrap;
-}
 }
 
 .noticia-detalle {
