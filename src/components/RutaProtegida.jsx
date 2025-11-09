@@ -10,6 +10,8 @@ import { useAuth } from '../context/AuthContext';
 const RutaProtegida = ({ children }) => {
   const { usuario } = useAuth();
 
+
+  
   if (!usuario) {
     return <Navigate to="/login" />;
   }

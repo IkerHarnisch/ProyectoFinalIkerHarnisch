@@ -51,14 +51,14 @@ const Home = () => {
       {/* Header */}
       <header className="home-header">
         <div className="header-content">
-          <h1>Portal de Noticias Corporativas</h1>
+          <h1>Portal de Noticias</h1>
           <nav className="header-nav">
             {usuario ? (
               <button 
                 onClick={() => navigate('/dashboard')}
                 className="btn-primary"
               >
-                Ir al Dashboard
+                Ir al Panel de Administración
               </button>
             ) : (
               <>
@@ -142,7 +142,7 @@ const Home = () => {
 
       {/* Footer */}
       <footer className="home-footer">
-        <p>&copy; 2025 Portal de Noticias Corporativas. Todos los derechos reservados.</p>
+        <p>Iker A. Harnisch Narvaez - Haciendo uso de Firebase y Cloudinary</p>
       </footer>
     </div>
   );

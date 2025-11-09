@@ -1,12 +1,14 @@
 import { useEffect, useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { 
   obtenerNoticiasPorAutor, 
   obtenerTodasNoticias,
   cambiarEstadoNoticia,
-  eliminarNoticia 
+  eliminarNoticia,
+  obtenerNoticiasPublicadas
 } from '../services/noticiasService';
+import { obtenerSecciones } from '../services/seccionesService';
 
 /*
  Dashboard principal que muestra diferentes vistas según el rol del usuario
@@ -18,6 +20,9 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [noticias, setNoticias] = useState([]);
+  const [noticiasPublicadas, setNoticiasPublicadas] = useState([]);
+  const [secciones, setSecciones] = useState([]);
+  const [categoriaSeleccionada, setCategoriaSeleccionada] = useState(null);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState('');
   const [refrescar, setRefrescar] = useState(0);
@@ -26,8 +31,9 @@ const Dashboard = () => {
   useEffect(() => {
     if (usuario && usuario.uid) {
       cargarNoticias();
+      cargarNoticiasPublicadas();
     }
-  }, [usuario, refrescar, location.pathname]);
+  }, [usuario, refrescar, location.pathname, categoriaSeleccionada]);
 
   const cargarNoticias = async () => {
     try {
@@ -48,6 +54,29 @@ const Dashboard = () => {
     } finally {
       setCargando(false);
     }
+  };
+
+  const cargarNoticiasPublicadas = async () => {
+    try {
+      const [noticiasObtenidas, seccionesObtenidas] = await Promise.all([
+        obtenerNoticiasPublicadas(categoriaSeleccionada),
+        obtenerSecciones()
+      ]);
+      
+      setNoticiasPublicadas(noticiasObtenidas);
+      setSecciones(seccionesObtenidas);
+    } catch (error) {
+      console.error('Error al cargar noticias publicadas:', error);
+    }
+  };
+
+  const formatearFecha = (fechaISO) => {
+    const fecha = new Date(fechaISO);
+    return fecha.toLocaleDateString('es-ES', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
   };
 
   const handleCerrarSesion = async () => {
@@ -236,6 +265,70 @@ const Dashboard = () => {
                     </div>
                   </div>
                 </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Sección de Noticias Publicadas */}
+        <div className="dashboard-published-section">
+          <h2>Noticias Publicadas</h2>
+          
+          {/* Filtro por categorías */}
+          <section className="categorias-section">
+            <div className="categorias-container">
+              <button
+                className={`categoria-btn ${!categoriaSeleccionada ? 'active' : ''}`}
+                onClick={() => setCategoriaSeleccionada(null)}
+              >
+                Todas
+              </button>
+              {secciones.map((seccion) => (
+                <button
+                  key={seccion.id}
+                  className={`categoria-btn ${categoriaSeleccionada === seccion.nombre ? 'active' : ''}`}
+                  onClick={() => setCategoriaSeleccionada(seccion.nombre)}
+                >
+                  {seccion.nombre}
+                </button>
+              ))}
+            </div>
+          </section>
+
+          {/* Grid de noticias publicadas */}
+          {noticiasPublicadas.length === 0 ? (
+            <div className="empty-state">
+              <p>No hay noticias publicadas en esta categoría</p>
+            </div>
+          ) : (
+            <div className="noticias-publicas-grid">
+              {noticiasPublicadas.map((noticia) => (
+                <article key={noticia.id} className="noticia-publica-card">
+                  <Link to={`/noticia/${noticia.id}`} className="noticia-link">
+                    {noticia.imagenUrl && (
+                      <div className="noticia-imagen-container">
+                        <img 
+                          src={noticia.imagenUrl} 
+                          alt={noticia.titulo}
+                          className="noticia-imagen"
+                        />
+                      </div>
+                    )}
+                    
+                    <div className="noticia-info">
+                      <span className="noticia-categoria">{noticia.categoria}</span>
+                      <h3 className="noticia-titulo">{noticia.titulo}</h3>
+                      <p className="noticia-subtitulo">{noticia.subtitulo}</p>
+                      
+                      <div className="noticia-footer">
+                        <span className="noticia-autor">Por {noticia.autorNombre}</span>
+                        <span className="noticia-fecha">
+                          {formatearFecha(noticia.fechaActualizacion)}
+                        </span>
+                      </div>
+                    </div>
+                  </Link>
+                </article>
               ))}
             </div>
           )}
